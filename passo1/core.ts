@@ -9,8 +9,6 @@ type Todoitem = {
 const jsonFilePath = import.meta.dir + '/data.todo.json';
 const list: Todoitem[] = await loadFromFile();
 
-
-
 async function loadFromFile() {
   try {
     const file = Bun.file(jsonFilePath);
@@ -68,50 +66,69 @@ async function removeAll() {
 }
 export default { addItem, getItems, updateItem, removeItem, ItemStatus, removeAll };
 
+async function loadFromFileStatus(filePath: string) {
+  try {
+    const file = Bun.file(jsonFilePath);
+    const content = await file.text();
+    return JSON.parse(content) as Todoitem[];
+  } catch (error: any) {
+    if (error.code === 'ENOENT')
+      return [];
+    throw error;
+  }
+}
+
 export class Item {
   private description: string;
+  private status: boolean;
 
-  constructor(description: string) {
+  constructor(description: string, status: boolean = false) {
     this.description = description;
+    this.status = status;
   }
 
   updateDescription(newDescription: string) {
     this.description = newDescription;
   }
 
+  setStatus(newStatus: boolean) {
+    this.status = newStatus;
+  }
+
   toJSON() {
     return {
-      description: this.description
+      description: this.description,
+      status: this.status
     }
   }
 }
 
 export class ToDo {
   private filepath: string;
-  private items: Promise<Item[]>;
+  private items!: Promise<Item[]>;
 
   constructor(filepath: string) {
     this.filepath = filepath;
     this.items = this.loadFromFile();
   }
 
-  private async saveToFile() {
+  private async saveToFile(): Promise<void> {
     try {
       const items = await this.items;
       const file = Bun.file(this.filepath);
       const data = JSON.stringify(items);
-      return Bun.write(file, data);
+      await Bun.write(file, data);
     } catch (error) {
       console.error('Error saving to file:', error);
     }
   }
 
-  private async loadFromFile() {
+  private async loadFromFile(): Promise<Item[]> {
     const file = Bun.file(this.filepath);
     if (!(await file.exists()))
-      return []
+      return [] as Item[]
     const data = await file.text();
-    return JSON.parse(data).map((itemData: any) => new Item(itemData.description));
+    return JSON.parse(data).map((itemData: any) => new Item(itemData.description, itemData.status)) as Item[];
   }
 
   async addItem(item: Item) {
@@ -126,7 +143,7 @@ export class ToDo {
 
   async updateItem(index: number, newItem: Item) {
     const items = await this.items;
-    if (index < 0 || index > items.length) 
+    if (index < 0 || index >= items.length) 
       throw new Error('Index out of bounds');
     items[index] = newItem;
     this.saveToFile();
@@ -134,7 +151,7 @@ export class ToDo {
 
   async removeItem(index: number) {
     const items = await this.items;
-    if (index < 0 || index > items.length) 
+    if (index < 0 || index >= items.length) 
       throw new Error('Index out of bounds');
     items.splice(index, 1);
     this.saveToFile();
@@ -147,8 +164,26 @@ export class ToDo {
 
   async findItemByIndex(index: number): Promise<Item | undefined> {
     const items = await this.items;
-    if (index < 0 || index > items.length) 
+    if (index < 0 || index >= items.length) 
       throw new Error('Index out of bounds');
     return items[index];
+  }
+
+  async removeAll() {
+    this.items = Promise.resolve([]);
+    await this.saveToFile();
+  }
+
+  async ItemStatus(index: number, newStatus: boolean) {
+    const getItems = async() => await this.items;
+    const allItems = await getItems();
+    
+    if (index < 0 || index >= allItems.length) {
+      throw new Error('Index out of bounds');
+    }
+    const currentItem = allItems[index];
+    currentItem.setStatus(newStatus);
+    this.items = Promise.resolve(allItems);
+    await this.saveToFile();
   }
 }

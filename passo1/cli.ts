@@ -1,4 +1,5 @@
 import { ToDo, Item } from './core.ts';
+import defaultExport from './core.ts';
 
 const file = process.argv[2]
 const command = process.argv[3];
@@ -38,8 +39,8 @@ if (command === "list") {
   
 
 if (command === "search"){
-    if (!process.argv[3]) {
-    console.error("Por favor, escreva um índice válido.");
+    if (!process.argv[4]) {
+    console.error("Por favor, escreva um termo de busca válido.");
     process.exit(1);
   }
   const items = await todo.getItems();
@@ -48,7 +49,7 @@ if (command === "search"){
     process.exit(0);
   }
 
-  const pChave = process.argv[3];
+  const pChave = process.argv[4];
   const search = items.filter(item => item.toJSON().description.includes(pChave))
   if (search.length === 0) {
     console.log("nenhum item achado para essa pesquisa.");
@@ -60,13 +61,13 @@ if (command === "search"){
   process.exit(0);
 }
 if (command === "update") {
-  if (!process.argv[3]) {
+  if (!process.argv[4]) {
     console.error("Por favor, escreva um índice válido.");
     process.exit(1);
   }
 
-  const index = parseInt(process.argv[3]);
-  const newItem = process.argv[4];
+  const index = parseInt(process.argv[4]);
+  const newItem = process.argv[5];
 
   if (isNaN(index) || !newItem) {
     console.error("Por favor, escreva um índice válido e um novo item.");
@@ -84,13 +85,13 @@ if (command === "update") {
 }
 
 if (command === "remove") {
-  if (!process.argv[3]) {
+  if (!process.argv[4]) {
     console.error("Por favor, escreva um índice válido.");
     process.exit(1);
   }
   
 
-  const index = parseInt(process.argv[3]);
+  const index = parseInt(process.argv[4]);
 
   if (isNaN(index)) {
     console.error("Por favor, escreva um índice válido para remover.");
@@ -117,21 +118,21 @@ if (command === "clear") {
   }
 }
 if (command === "status"){
-  if (!process.argv[3]) {
+  if (!process.argv[4]) {
     console.error("Por favor, escreva um índice válido.");
     process.exit(1);
   }
 
-  const index = parseInt(process.argv[3]);
-  const newstatus = process.argv[4];
+  const index = parseInt(process.argv[4]);
+  const newstatus = process.argv[5];
 
   if (isNaN(index) || !newstatus) {
     console.error("Por favor, escreva um índice válido e um novo status [concluido/pendente].");
     process.exit(1);
   }
   try{
-    const status = newstatus === "concluido"
-    await todo.ItemStatus(index, status)
+    const status = newstatus === "concluido";
+    await todo.ItemStatus(index, status);
     console.log(`Item no índice ${index} atualizado para "${newstatus}".`);
     process.exit(0);
   }catch (error: any){
