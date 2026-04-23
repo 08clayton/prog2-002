@@ -50,7 +50,8 @@ const server = Bun.serve({
       }
     }
 
-    // PUT /items?index=0 - atualizar item
+    // PUT /items?index=0 - atualizar item 
+    // o senhor pediu para não mexer porque o index tava dando erro 400(invalid index parameter) mesmo com index existindo
     if (pathname === "/items" && method === "PUT") {
       try {
         const index = parseInt(searchParams.get("index") || "");
