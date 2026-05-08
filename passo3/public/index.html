@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang='en'>
+
+<head>
+  <meta charset='utf-8'>
+  <meta name='viewport' content='width=device-width, initial-scale=1'>
+  <title>Exemplo</title>
+  <link rel="stylesheet" href="main.css">
+</head>
+
+<body>
+  <pre id="app">
+    ... aqui vai aparecer o resultado da API ...
+  </pre>
+
+  <button class="bt-buscar">Buscar</button>
+  <button class="bt-cadastrar">Cadastrar</button>
+  <button class="bt-atualizar">Atualizar</button>
+  <button class="bt-patch">Patch</button>
+  <button class="bt-deletar">Deletar</button>
+
+  <script>
+    const container = document.querySelector('#app');
+    const btBuscar = document.querySelector('.bt-buscar');
+    const btCadastrar = document.querySelector('.bt-cadastrar');
+    const btAtualizar = document.querySelector('.bt-atualizar');
+    const btPatch = document.querySelector('.bt-patch');
+    const btDeletar = document.querySelector('.bt-deletar');
+
+    btBuscar.addEventListener('click', async () => {
+      const resposta = await fetch('/api/exemplo');
+      const dados = await resposta.text();
+      container.textContent = dados;
+    });
+
+    btCadastrar.addEventListener('click', async () => {
+      const resposta = await fetch('/api/todo', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ item: `Novo item ${Date.now()}` })
+      });
+      const dados = await resposta.text();
+      container.textContent = dados;
+    });
+
+    btAtualizar.addEventListener('click', async () => {
+      const resposta = await fetch('/api/todo/0', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ newItem: `Item atualizado ${Date.now()}` })
+      });
+      const dados = await resposta.text();
+      container.textContent = dados;
+    });
+
+    btPatch.addEventListener('click', async () => {
+      const resposta = await fetch('/api/exemplo/67', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ nome: `Daniel`, idade: 40 })
+      });
+      const dados = await resposta.text();
+      container.textContent = dados;
+    });
+
+    btDeletar.addEventListener('click', async () => {
+      const resposta = await fetch('/api/todo/2', { method: 'DELETE' });
+      const dados = await resposta.text();
+      container.textContent = dados;
+    });
+  </script>
+</body>
+
+</html>
